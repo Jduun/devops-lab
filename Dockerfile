@@ -1,7 +1,31 @@
-FROM python:3.14-slim-trixie
+FROM golang:1.27.1-alpine3.24@sha256:8a5910f31396cd4d89662f56c68b3ae31d374308270a1c3bd96672ee5ed43414 AS builder
+
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY app.py .
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 \
+    GOOS=linux \
+    GOTOOLCHAIN=local \
+    go build \
+        -mod=readonly \
+        -trimpath \
+        -ldflags="-s -w" \
+        -o /app/server \
+        .
+
+
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:e2e927ec666bae08560abb3c55d0659eceabb657f56b6782ab500a9fc7f555e3
+
+WORKDIR /app
+
+COPY --from=builder --chmod=0555 /app/server /app/server
+
+USER 65532:65532
+
 EXPOSE 32777
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "32777"]
+
+ENTRYPOINT ["/app/server"]
