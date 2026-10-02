@@ -17,6 +17,24 @@ spec:
     spec:
       containers:
         - name: hello-world
-          image: jduun/hello-world:0.1
+          image: jduun/hello-world:0.1@sha256:9d8d791b56b1cc8e6353d4fb5c4797a06412a4dd4f4107b7ccadde02c2acb629
           ports:
             - containerPort: 32777
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 32777
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 32777
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
