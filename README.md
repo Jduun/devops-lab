@@ -19,7 +19,7 @@ docker push jduun/hello-world:0.1.0
 
 ### Проверка на уязвимости
 ```sh
-trivy image jduun/hello-world:0.1@sha256:1353ad931a4160a5d8047eff165545b75145628b26f0e4d7ecfa58bfa660bd42
+trivy image jduun/hello-world:0.1.0@sha256:1353ad931a4160a5d8047eff165545b75145628b26f0e4d7ecfa58bfa660bd42
 ```
 
 ## API приложения
