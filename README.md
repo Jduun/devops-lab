@@ -1,53 +1,116 @@
 # devops-lab
 
-Поднимем простой веб-сервис в Minikube кластере с 2 репликами. Docker-образ приложения на Docker Hub: https://hub.docker.com/r/jduun/hello-world.
+Поднимем `hello-world` сервис на Go в Minikube кластере с 2 репликами.
+
+## Docker-образ
+Docker-образ сервиса: https://hub.docker.com/r/jduun/hello-world.
+
+### Сборка
+```sh
+docker build --no-cache -t jduun/hello-world:0.1.0 .
+```
+
+### Публикация
+```sh
+docker login
+docker push jduun/hello-world:0.1.0
+```
+
+
+### Проверка на уязвимости
+```sh
+trivy image jduun/hello-world:0.1@sha256:1353ad931a4160a5d8047eff165545b75145628b26f0e4d7ecfa58bfa660bd42
+```
+
+## API приложения
+
+### `GET /`
+#### Описание
+Основной эндпоинт сервиса.
+
+#### Ответ
+Статус: `200 OK`
+
+```json
+{
+  "message": "Hello World"
+}
+```
+
+### `GET /ready`
+#### Описание
+Проверка готовности сервиса.
+
+#### Ответ
+Статус: `200 OK`
+
+```json
+{
+  "status": "ok"
+}
+```
+
+
+### `GET /health`
+#### Описание
+Проверка работоспособности приложения.
+
+#### Ответ
+Статус: `200 OK`
+
+```json
+{
+  "status": "ok"
+}
+```
 
 ## Запуск в Minikube
 
-### 1. Запуск Minikube кластера
+### Запуск Minikube кластера
 ```sh
 minikube start
 ```
 
-### 2. Фикс проблемы с DNS
+### Просмотр сгенерированных манифестов
 ```sh
-minikube ssh -- "sudo sh -c 'printf \"nameserver 1.1.1.1\nnameserver 8.8.8.8\n\" > /etc/resolv.conf'"
+helm template prod ./charts/hello-world
 ```
 
-### 3. Применяем манифесты
+### Установка Helm chart
 ```sh
-kubectl apply -f k8s/
+helm upgrade --install prod ./charts/hello-world
 ```
 
-### 4. Проверяем установку
+### Проверяем установку
 ```sh
 kubectl get deploy,pods,svc
 ```
 
-### 5. Проброс портов
+### Проброс портов
 ```sh
 minikube tunnel
 ```
 
-### 6. Получаем `EXTERNAL-IP`  
+### Получаем `EXTERNAL-IP`
 ```sh
-kubectl get svc hello-world
+kubectl get svc prod-hello-world
 ```
 
-### 7. Запрос к сервису
+### Запрос к сервису
 ```sh
-curl "http://<EXTERNAL-IP>:32777"
+curl "http://<EXTERNAL-IP>:80"
 ```
 Или переходим в браузере по этой ссылке.
 
+### Удаление релиза
+```sh
+helm uninstall prod
+```
+
 ## Результаты
 
-### Скриншоты
-![screen1.png](images/screen1.png)
-
-![screen2.png](images/screen2.png)
-
-![screen3.png](images/screen3.png)
+### Скриншот
+![screen.png](images/screen.png)
 
 ### Схема Minikube-кластера
 

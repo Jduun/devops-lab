@@ -1,0 +1,27 @@
+replicaCount: 2
+
+image:
+  repository: jduun/hello-world
+  tag: "0.1.0"
+  digest: sha256:1353ad931a4160a5d8047eff165545b75145628b26f0e4d7ecfa58bfa660bd42
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 32777
+
+probes:
+  readiness:
+    path: /ready
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 5
+
+  liveness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 5
