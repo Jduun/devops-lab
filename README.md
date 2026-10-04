@@ -3,11 +3,9 @@
 Поднимем `hello-world` сервис на Go в Minikube кластере с 2 репликами.
 
 ## Docker-образ
-Docker-образ сервиса: https://hub.docker.com/r/jduun/hello-world.
-
 ### Сборка
 ```sh
-docker build --no-cache -t jduun/hello-world:0.1.0 .
+docker build -t jduun/hello-world:0.1.0 .
 ```
 
 ### Публикация
@@ -15,7 +13,7 @@ docker build --no-cache -t jduun/hello-world:0.1.0 .
 docker login
 docker push jduun/hello-world:0.1.0
 ```
-
+Образ на Docker Hub: https://hub.docker.com/r/jduun/hello-world.
 
 ### Проверка на уязвимости
 ```sh
