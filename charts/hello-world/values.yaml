@@ -3,7 +3,7 @@ replicaCount: 2
 image:
   repository: jduun/hello-world
   tag: "0.1.0"
-  digest: sha256:1353ad931a4160a5d8047eff165545b75145628b26f0e4d7ecfa58bfa660bd42
+  digest: sha256:5fb84584ca03014a8f42faeb504726cae02035dee38119fc596b069d088981d7
   pullPolicy: IfNotPresent
 
 service:
@@ -33,3 +33,10 @@ probes:
     periodSeconds: 5
     timeoutSeconds: 2
     failureThreshold: 5
+
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  interval: 15s
+  labels:
+    release: monitoring

@@ -2,6 +2,9 @@
 
 Поднимем `hello-world` сервис на Go в Minikube кластере с 2 репликами.
 
+## Tech Stack
+Go, Docker, Kubernetes (Minikube), Helm, Grafana, Prometheus
+
 ## Docker-образ
 ### Сборка
 ```sh
@@ -17,7 +20,7 @@ docker push jduun/hello-world:0.1.0
 
 ### Проверка на уязвимости
 ```sh
-trivy image jduun/hello-world:0.1.0@sha256:1353ad931a4160a5d8047eff165545b75145628b26f0e4d7ecfa58bfa660bd42
+trivy image jduun/hello-world:0.1.0@sha256:5fb84584ca03014a8f42faeb504726cae02035dee38119fc596b069d088981d7
 ```
 
 ## API приложения
@@ -60,6 +63,19 @@ trivy image jduun/hello-world:0.1.0@sha256:1353ad931a4160a5d8047eff165545b751456
 {
   "status": "ok"
 }
+```
+
+### `GET /metrics`
+#### Описание
+Отдает метрики для Prometheus.
+
+#### Ответ
+Статус: `200 OK`
+
+```
+# HELP <metric_name> <описание>
+# TYPE <metric_name> <тип>
+<metric_name>{label="value"} <число>
 ```
 
 ## Запуск в Minikube
@@ -105,11 +121,48 @@ curl "http://<EXTERNAL-IP>:80"
 helm uninstall prod
 ```
 
+## Мониторинг
+### Установка
+Установка инструменты для мониторинга:
+```sh
+helm upgrade --install monitoring \
+  oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace
+```
+
+### Grafana
+Логин:
+```
+admin
+```
+Пароль:
+```sh
+kubectl -n monitoring get secret monitoring-grafana \
+  -o jsonpath="{.data.admin-password}" | base64 -d
+echo
+```
+
+### Нагрузочный тест
+```sh
+kubectl run load-test \
+  --rm -it \
+  --restart=Never \
+  --image=fortio/fortio \
+  -- load \
+  -qps 0 \
+  -c 20 \
+  -t 1m \
+  http://<EXTERNAL_IP>:80/cpu
+```
+
+### Метрики пода
+![grafana.png](images/grafana.png)
+
 ## Результаты
 
 ### Скриншот
 ![screen.png](images/screen.png)
 
 ### Схема Minikube-кластера
-
 ![cluster.png](images/cluster.png)
