@@ -36,6 +36,13 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}
