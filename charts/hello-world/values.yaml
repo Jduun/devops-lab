@@ -11,6 +11,14 @@ service:
   port: 80
   targetPort: 32777
 
+resources:
+  requests:
+    cpu: "10m"
+    memory: "16Mi"
+  limits:
+    cpu: "100m"
+    memory: "64Mi"
+
 probes:
   readiness:
     path: /ready
