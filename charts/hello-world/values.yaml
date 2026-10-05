@@ -40,3 +40,23 @@ serviceMonitor:
   interval: 15s
   labels:
     release: monitoring
+
+alerts:
+  enabled: true
+  labels:
+    release: monitoring
+
+  serviceDown:
+    for: 20s
+
+  restarts:
+    window: 10m
+    for: 0m
+
+  cpu:
+    threshold: 0.8
+    for: 5m
+
+  memory:
+    threshold: 0.8
+    for: 5m

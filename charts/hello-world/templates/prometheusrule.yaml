@@ -1,0 +1,72 @@
+{{- if .Values.alerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: {{ include "app.fullname" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    {{- with .Values.alerts.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+spec:
+  groups:
+    - name: {{ include "app.fullname" . }}
+      rules:
+        - alert: HelloWorldServiceDown
+          expr: absent(up{namespace="{{ .Release.Namespace }}", service="{{ include "app.fullname" . }}"} == 1)
+          for: {{ .Values.alerts.serviceDown.for }}
+          labels:
+            namespace: {{ .Release.Namespace | quote }}
+            severity: critical
+            team: hello-world
+          annotations:
+            summary: hello-world has no healthy Prometheus targets
+
+        - alert: HelloWorldContainerRestarted
+          expr: increase(kube_pod_container_status_restarts_total{namespace="{{ .Release.Namespace }}", container="{{ .Chart.Name }}"}[{{ .Values.alerts.restarts.window }}]) > 0
+          for: {{ .Values.alerts.restarts.for }}
+          labels:
+            namespace: {{ .Release.Namespace | quote }}
+            severity: warning
+            team: hello-world
+          annotations:
+            summary: hello-world container restarted
+
+        - alert: HelloWorldHighCPU
+          expr: |
+            sum by (namespace, pod, container) (
+              rate(container_cpu_usage_seconds_total{namespace="{{ .Release.Namespace }}", container="{{ .Chart.Name }}", image!=""}[5m])
+            )
+            /
+            sum by (namespace, pod, container) (
+              kube_pod_container_resource_limits{namespace="{{ .Release.Namespace }}", container="{{ .Chart.Name }}", resource="cpu", unit="core"}
+            )
+            > {{ .Values.alerts.cpu.threshold }}
+          for: {{ .Values.alerts.cpu.for }}
+          labels:
+            namespace: {{ .Release.Namespace | quote }}
+            severity: warning
+            team: hello-world
+          annotations:
+            summary: hello-world CPU usage is above its limit threshold
+
+        - alert: HelloWorldHighMemory
+          expr: |
+            sum by (namespace, pod, container) (
+              container_memory_working_set_bytes{namespace="{{ .Release.Namespace }}", container="{{ .Chart.Name }}", image!=""}
+            )
+            /
+            sum by (namespace, pod, container) (
+              kube_pod_container_resource_limits{namespace="{{ .Release.Namespace }}", container="{{ .Chart.Name }}", resource="memory", unit="byte"}
+            )
+            > {{ .Values.alerts.memory.threshold }}
+          for: {{ .Values.alerts.memory.for }}
+          labels:
+            namespace: {{ .Release.Namespace | quote }}
+            severity: warning
+            team: hello-world
+          annotations:
+            summary: hello-world memory usage is above its limit threshold
+{{- end }}

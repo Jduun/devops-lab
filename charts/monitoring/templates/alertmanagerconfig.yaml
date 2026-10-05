@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+
+metadata:
+  name: {{ include "monitoring.fullname" . }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+
+spec:
+  route:
+    groupBy:
+      - alertname
+      - namespace
+    groupWait: {{ .Values.telegram.groupWait }}
+    groupInterval: {{ .Values.telegram.groupInterval }}
+    repeatInterval: {{ .Values.telegram.repeatInterval }}
+    receiver: telegram
+    matchers:
+      - name: team
+        value: hello-world
+        matchType: "="
+
+  receivers:
+    - name: telegram
+      telegramConfigs:
+        - botToken:
+            name: {{ include "monitoring.telegramSecretName" . }}
+            key: token
+          chatID: {{ required "telegram.chatId must be set in secrets.yaml" .Values.telegram.chatId | int64 }}
+          sendResolved: {{ .Values.telegram.sendResolved }}
+          parseMode: {{ .Values.telegram.parseMode }}
+          message: |-
+            {{- .Values.telegram.message | nindent 12 }}

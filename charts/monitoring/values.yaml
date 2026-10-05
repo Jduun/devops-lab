@@ -1,0 +1,17 @@
+telegram:
+  botToken: ""
+  chatId: 0
+  sendResolved: true
+  parseMode: HTML
+  groupWait: 10s
+  groupInterval: 30s
+  repeatInterval: 10m
+  message: |-
+    <b>{{ .Status | toUpper }}</b>
+    {{ range .Alerts }}
+    Alert: <code>{{ .Labels.alertname | html }}</code>
+    Severity: <code>{{ .Labels.severity | toUpper | html }}</code>
+    Summary: <code>{{ .Annotations.summary | html }}</code>
+    Namespace: <code>{{ .Labels.namespace | html }}</code>
+    {{ with .Labels.pod }}Pod: <code>{{ . | html }}</code>{{ end }}
+    {{ end }}
